@@ -13,7 +13,7 @@ paths:
   enhanced_model_pkl: "artifacts/enhanced_model_wrapper.pkl"
   model_pkl: "artifacts/model_wrapper.pkl"
   pipeline_pkl: "artifacts/preprocessor.pkl"
-
+  model_keras: "artifacts/model.keras"
 gpu:
   enable_memory_growth: true
 
