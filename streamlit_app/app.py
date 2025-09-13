@@ -20,7 +20,7 @@ import os
 def download_models():
     """Download models if not present"""
     model_urls = {
-        'model.keras': 'https://drive.google.com/uc?id=1S33KAvMN1unUBDVB4oXBbB4Q9gWu8Phr'
+        'model.keras': 'https://drive.google.com/uc?id=1ktw5RxeOt2QHLOJt6WZWSUQ4wswTeYuv'
         # etc.
     }
 
