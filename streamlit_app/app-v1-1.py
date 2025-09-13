@@ -309,7 +309,7 @@ def app():
     # Call this before loading models
     #ensure_model_cached_and_mirrored()
     st.title('Image Severity Classifier')
-    #cfg_path = st.text_input('Config path', value='configs/config_local.yaml')
+    cfg_path = st.text_input('Config path', value='configs/config_local.yaml')
     
     if not os.path.exists(cfg_path):
         st.error('Config file not found.')
