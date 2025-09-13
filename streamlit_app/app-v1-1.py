@@ -1,12 +1,11 @@
 """
-app.py — Minimal patch: Google Drive PUBLIC download + local cache + mirrors
+app.py —
 ---------------------------------------------------------------------------
 - No Google service account; uses public Drive File ID or URL.
 - Downloads once to MODEL_LOCAL_PATH (default: artifacts/model.bin).
 - Optionally mirrors/copies to multiple expected paths (MODEL_TARGETS env, comma-separated)
   so existing code that looks in a different path still finds the file.
 - Exposes MODEL_LOCAL_PATH via env for downstream code.
-- Does NOT modify your prediction/upload logic — paste your existing app code below the marker.
 
 Env/Secrets:
   - GDRIVE_FILE_ID    : Google Drive file ID or full URL (public access)
@@ -113,8 +112,8 @@ def ensure_model_cached_and_mirrored() -> Path:
     and also copy to each path listed in MODEL_TARGETS (comma-separated).
     Returns the primary local path.
     """
-    file_id_or_url = os.getenv("GDRIVE_FILE_ID", "") or st.secrets.get("GDRIVE_FILE_ID", "'1S33KAvMN1unUBDVB4oXBbB4Q9gWu8Phr")
-    primary_path = _abs(os.getenv("MODEL_LOCAL_PATH", "artifacts"))
+    file_id_or_url = os.getenv("GDRIVE_FILE_ID", "") or st.secrets.get("GDRIVE_FILE_ID", "")
+    primary_path = _abs(os.getenv("MODEL_LOCAL_PATH", "../artifacts"))
     expected_sha = (os.getenv("MODEL_SHA256", "") or st.secrets.get("MODEL_SHA256", "") or "").lower() or None
 
     # Parse additional targets
@@ -176,7 +175,7 @@ def preprocess_and_predict_file(pre, wrapper, file_bytes, filename):
 
 def app():
     # Call this before loading models
-    #download_models()
+    ensure_model_cached_and_mirrored()
     st.title('Image Severity Classifier')
     cfg_path = st.text_input('Config path', value='configs/config_local.yaml')
     if not os.path.exists(cfg_path):
