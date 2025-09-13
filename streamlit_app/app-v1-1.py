@@ -311,7 +311,7 @@ def app():
     st.title('Image Severity Classifier')
     #cfg_path = st.text_input('Config path', value='configs/config_local.yaml')
     
-  if not os.path.exists(cfg_path):
+    if not os.path.exists(cfg_path):
         st.error('Config file not found.')
         st.stop()
     cfg, pre, wrapper = ensure_and_load_artifacts(cfg_path)
