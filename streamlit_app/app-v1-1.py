@@ -113,25 +113,31 @@ def ensure_and_load_artifacts(cfg_path: str):
     # Resolve local paths
     pipeline_pkl = Path(cfg.paths["pipeline_pkl"])
     model_pkl = Path(cfg.paths["model_pkl"])
-
+    model_keras = Path(cfg.paths["model_keras"])
+  
     # Optionally override with a cache dir
     if not pipeline_pkl.is_absolute():
         pipeline_pkl = CACHE_DIR / Path(cfg.paths["pipeline_pkl"]).name
     if not model_pkl.is_absolute():
         model_pkl = CACHE_DIR / Path(cfg.paths["model_pkl"]).name
+    if not model_keras.is_absolute():
+        model_keras = CACHE_DIR / Path(cfg.paths["model_keras"]).name
 
     # Sources (choose whichever you use)
     # 1) Prefer Streamlit secrets
     pipe_id = SECRETS.get("pipeline_gdrive_id", None)
     model_id = SECRETS.get("model_gdrive_id", None)
+    model_keras_id = SECRETS.get("GDRIVE_FILE_ID", None)
     # 2) Or encode in your YAML as:
     # paths:
     #   pipeline_gdrive_id: "..."
     #   model_gdrive_id: "..."
     pipe_id = pipe_id or cfg.paths.get("pipeline_gdrive_id")
     model_id = model_id or cfg.paths.get("model_gdrive_id")
+    model_keras_id = model_keras_id or cfg.paths.get("model_keras_gdrive_id")
     pipe_url = cfg.paths.get("pipeline_url")  # optional direct URL
     model_url = cfg.paths.get("model_url")    # optional direct URL
+    model_keras_url = cfg.paths.get("model_keras_url")    # optional direct URL
 
     with st.spinner("Ensuring model & pipeline artifacts..."):
         if not pipeline_pkl.exists():
@@ -148,6 +154,13 @@ def ensure_and_load_artifacts(cfg_path: str):
             else:
                 raise FileNotFoundError(
                     f"Model missing: {model_pkl}. Provide model_gdrive_id or model_url in config/secrets."
+                )
+        if not model_keras.exists():
+            if model_keras_id or model_keras_url:
+                _download_if_missing(model_keras, file_id=model_keras_id, url=model_keras_url)
+            else:
+                raise FileNotFoundError(
+                    f"Model missing: {model_keras}. Provide model_gdrive_id or model_keras_url in config/secrets."
                 )
 
     # Now load them
@@ -245,7 +258,7 @@ def ensure_model_cached_and_mirrored() -> Path:
     Returns the primary local path.
     """
     file_id_or_url = os.getenv("GDRIVE_FILE_ID", "") or st.secrets.get("GDRIVE_FILE_ID", "")
-    primary_path = _abs(os.getenv("MODEL_LOCAL_PATH", "../artifacts"))
+    primary_path = _abs(os.getenv("MODEL_LOCAL_PATH", "artifacts"))
     expected_sha = (os.getenv("MODEL_SHA256", "") or st.secrets.get("MODEL_SHA256", "") or "").lower() or None
 
     # Parse additional targets
