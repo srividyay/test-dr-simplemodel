@@ -24,6 +24,138 @@ def _abs(path_str: str) -> Path:
     p = Path(path_str)
     return p if p.is_absolute() else (BASE_DIR / p)
 
+# --- repo-root import bootstrap (so `src` resolves) ---
+import sys, os, time
+from pathlib import Path
+import streamlit as st
+from urllib.request import urlopen, Request, urlretrieve
+from urllib.error import HTTPError, URLError
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+# --- end bootstrap ---
+
+# Optional: read “secrets” if you deploy on Streamlit Cloud
+# Put in .streamlit/secrets.toml:
+# [artifacts]
+# model_gdrive_id = "1AbCDEF..."
+# pipeline_gdrive_id = "1HiJKL..."
+SECRETS = st.secrets.get("artifacts", {})
+
+# Where to cache artifacts locally (relative to repo root by default)
+CACHE_DIR = Path(os.getenv("MODEL_CACHE_DIR", ROOT / "artifacts"))
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _gdrive_download(file_id: str, dst: Path) -> None:
+    """
+    Download a PUBLIC Google Drive file id to dst without gdown/service account.
+    For large files with virus scan warning, we follow the confirm token cookie.
+    """
+    # Simple path via export=download
+    base = "https://drive.google.com/uc?export=download&id="
+    url = f"{base}{file_id}"
+    req = Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urlopen(req) as r:
+            data = r.read()
+    except HTTPError as e:
+        raise RuntimeError(f"GDrive download failed: HTTP {e.code}") from e
+    except URLError as e:
+        raise RuntimeError(f"GDrive download failed: {e.reason}") from e
+
+    # For big files, Google adds an interstitial page. Heuristic: if content looks HTML, retry with confirm.
+    if data[:100].lstrip().startswith(b"<!DOCTYPE html") or b"confirm=" in data:
+        # Try to extract confirm token
+        text = data.decode("utf-8", errors="ignore")
+        import re
+        m = re.search(r'href="(/uc\?export=download[^"]*?confirm=([^"&]+)[^"]*)"', text)
+        if not m:
+            # Fallback: write what we got; sometimes it is the file
+            dst.write_bytes(data)
+            return
+        confirm_url = "https://drive.google.com" + m.group(1).replace("&amp;", "&")
+        req2 = Request(confirm_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urlopen(req2) as r2:
+            data2 = r2.read()
+        dst.write_bytes(data2)
+        return
+    # Small file path
+    dst.write_bytes(data)
+
+
+def _download_if_missing(dst: Path, *, file_id: str | None = None, url: str | None = None) -> None:
+    if dst.exists() and dst.stat().st_size > 0:
+        return
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if file_id:
+        _gdrive_download(file_id, dst)
+    elif url:
+        # Generic URL
+        urlretrieve(url, dst)
+    else:
+        raise RuntimeError(f"No download source provided for {dst}")
+
+
+@st.cache_resource(show_spinner=True)
+def ensure_and_load_artifacts(cfg_path: str):
+    """
+    Ensures model/pipeline exist locally by downloading if needed, then loads them.
+    Cached so it runs once per session.
+    """
+    from src.config import load_config
+    from src.data_pipeline import ImagePreprocessor
+    import pickle
+
+    cfg = load_config(cfg_path)
+
+    # Resolve local paths
+    pipeline_pkl = Path(cfg.paths["pipeline_pkl"])
+    model_pkl = Path(cfg.paths["model_pkl"])
+
+    # Optionally override with a cache dir
+    if not pipeline_pkl.is_absolute():
+        pipeline_pkl = CACHE_DIR / Path(cfg.paths["pipeline_pkl"]).name
+    if not model_pkl.is_absolute():
+        model_pkl = CACHE_DIR / Path(cfg.paths["model_pkl"]).name
+
+    # Sources (choose whichever you use)
+    # 1) Prefer Streamlit secrets
+    pipe_id = SECRETS.get("pipeline_gdrive_id", None)
+    model_id = SECRETS.get("model_gdrive_id", None)
+    # 2) Or encode in your YAML as:
+    # paths:
+    #   pipeline_gdrive_id: "..."
+    #   model_gdrive_id: "..."
+    pipe_id = pipe_id or cfg.paths.get("pipeline_gdrive_id")
+    model_id = model_id or cfg.paths.get("model_gdrive_id")
+    pipe_url = cfg.paths.get("pipeline_url")  # optional direct URL
+    model_url = cfg.paths.get("model_url")    # optional direct URL
+
+    with st.spinner("Ensuring model & pipeline artifacts..."):
+        if not pipeline_pkl.exists():
+            if pipe_id or pipe_url:
+                _download_if_missing(pipeline_pkl, file_id=pipe_id, url=pipe_url)
+            else:
+                # If you train locally first, you can upload your pkl to the repo/artifacts
+                raise FileNotFoundError(
+                    f"Preprocessor missing: {pipeline_pkl}. Provide pipeline_gdrive_id or pipeline_url in config/secrets."
+                )
+        if not model_pkl.exists():
+            if model_id or model_url:
+                _download_if_missing(model_pkl, file_id=model_id, url=model_url)
+            else:
+                raise FileNotFoundError(
+                    f"Model missing: {model_pkl}. Provide model_gdrive_id or model_url in config/secrets."
+                )
+
+    # Now load them
+    pre = ImagePreprocessor.load(str(pipeline_pkl))
+    with open(model_pkl, "rb") as f:
+        wrapper = pickle.load(f)
+    return cfg, pre, wrapper
+
 # ---------------------------
 # Hashing & safe file writes
 # ---------------------------
@@ -177,11 +309,12 @@ def app():
     # Call this before loading models
     #ensure_model_cached_and_mirrored()
     st.title('Image Severity Classifier')
-    cfg_path = st.text_input('Config path', value='configs/config_local.yaml')
-    if not os.path.exists(cfg_path):
+    #cfg_path = st.text_input('Config path', value='configs/config_local.yaml')
+    
+  if not os.path.exists(cfg_path):
         st.error('Config file not found.')
         st.stop()
-    cfg, pre, wrapper = load_artifacts(cfg_path)
+    cfg, pre, wrapper = ensure_and_load_artifacts(cfg_path)
     class_names = wrapper.class_names
 
     tab1, tab2 = st.tabs(['Single Image Prediction', 'ZIP/Bulk Prediction'])
