@@ -13,5 +13,4 @@ seaborn>=0.12.0
 pillow>=9.0.0
 jupyter>=1.0.0
 torch>=1.13.0  # Alternative to TensorFlow
-scikeras>=0.13.0
 pyyaml>=6.0.1
