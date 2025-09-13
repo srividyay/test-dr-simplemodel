@@ -223,7 +223,7 @@ def download_gdrive_public_cached(file_id_or_url: str, dst_path: Path, expected_
                 pass
         else:
             return dst_path
-
+    print("Entered download_gdrive_public_cached()")
     file_id = _extract_file_id(file_id_or_url)
     sess = requests.Session()
     base = "https://drive.google.com/uc"
@@ -257,6 +257,7 @@ def ensure_model_cached_and_mirrored() -> Path:
     and also copy to each path listed in MODEL_TARGETS (comma-separated).
     Returns the primary local path.
     """
+    print("Entered ensure_model_cached_and_mirrored()")
     file_id_or_url = os.getenv("GDRIVE_FILE_ID", "") or st.secrets.get("GDRIVE_FILE_ID", "")
     primary_path = _abs(os.getenv("MODEL_LOCAL_PATH", "artifacts"))
     expected_sha = (os.getenv("MODEL_SHA256", "") or st.secrets.get("MODEL_SHA256", "") or "").lower() or None
@@ -268,7 +269,7 @@ def ensure_model_cached_and_mirrored() -> Path:
 
     with st.spinner("Fetching model (first run only)…"):
         local_path = download_gdrive_public_cached(file_id_or_url, primary_path, expected_sha)
-
+    print("Finished downloading model -> ensure_model_cached_and_mirrored()")
     # Expose for downstream loaders
     os.environ.setdefault("MODEL_LOCAL_PATH", str(primary_path))
     return primary_path 
