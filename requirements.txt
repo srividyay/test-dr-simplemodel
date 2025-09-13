@@ -5,7 +5,8 @@ matplotlib>=3.5.0
 seaborn>=0.12.0
 pillow>=9.0.0
 jupyter>=1.0.0
-opencv-python>=4.6.0
+#opencv-python>=4.6.0
+opencv-python-headless==4.10.0.84
 tensorflow>=2.10.0  # For CNN models (retinal/product images)
 torch>=1.13.0  # Alternative to TensorFlow
 streamlit>=1.35.0
