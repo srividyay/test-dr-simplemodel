@@ -43,7 +43,7 @@ training:
 
 streamlit:
   page_title: "Image Severity Classifier"
-  max_zip_extract_files: 500
+  max_zip_extract_files: 3500
 
 severity:
   mapping: {}
