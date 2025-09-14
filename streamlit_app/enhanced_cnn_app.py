@@ -283,7 +283,7 @@ with tab1:
                     color = color_from_triage(i, triage_map)
 
                     st.success(f"Prediction: **{pred_name}**  ·  Confidence: **{conf:.3f}**")
-                    st.image(disp_img, caption="Processed image used for prediction", use_container_width=False, width=300)
+                    st.image(disp_img, caption="Processed image used for prediction", width=300)
 
                 # Result header
                 st.success(f"Prediction: **{pred_name}**  ·  Confidence: **{conf:.3f}**")
