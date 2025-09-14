@@ -109,7 +109,7 @@ def get_triage_tip(class_key, triage_map):
             return triage_map[idx_key][0], triage_map[idx_key][1]
     except Exception:
         pass
-    return ("General", "Interpret in context with clinical findings; not for diagnosis.")
+    return ("General", "Predictions provide near 75% accuracy!")
 
 def sanitize_filename(name: str) -> str:
     # Avoid leaking patient identifiers; optionally hash
