@@ -196,11 +196,11 @@ with st.sidebar:
 
     st.markdown("**Confidence Guidance**")
     st.caption(
-        "- Severity grades (0-4 scale):"
-        "- 0: No diabetic retinopathy"
-        "- 1: Mild nonproliferative retinopathy"
-        "- 2: Moderate nonproliferative retinopathy"
-        "- 3: Severe nonproliferative retinopathy"
+        "- Severity grades (0-4 scale):\n"
+        "- 0: No diabetic retinopathy\n"
+        "- 1: Mild nonproliferative retinopathy\n"
+        "- 2: Moderate nonproliferative retinopathy\n"
+        "- 3: Severe nonproliferative retinopathy\n"
         "- 4: Proliferative diabetic retinopathy"
     )
 
