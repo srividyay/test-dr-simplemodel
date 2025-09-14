@@ -61,7 +61,7 @@ def in_ph_safe_mode():
 def show_disclaimer():
     st.info(
         "### Clinical Preview\n",
-        icon="<a href="https://www.flaticon.com/free-icons/ophthalmology" title="ophthalmology icons">Ophthalmology icons created by Paul J. - Flaticon</a>",
+        icon="👁️",
     )
 
 def ensure_tmp():
