@@ -5,6 +5,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import io, os, zipfile, tempfile, pickle, shutil, json, datetime
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]  # repo root (parent of streamlit_app/)
 if str(ROOT) not in sys.path:
