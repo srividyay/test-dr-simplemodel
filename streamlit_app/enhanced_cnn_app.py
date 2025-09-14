@@ -179,7 +179,9 @@ def preprocess_and_predict_file(pre, wrapper, file_bytes, filename):
         x = np.expand_dims(arr, axis=0)
         idxs, probs = wrapper.predict(x)
         i = int(idxs[0]); conf = float(np.max(probs[0]))
-        return i, conf, probs[0]
+        disp_img = Image.fromarray((arr * 255).astype("uint8"))
+
+        return i, conf, probs[0], disp_img
     finally:
         cleanup_tmp(tmpdir)
 
@@ -274,10 +276,13 @@ with tab1:
         else:
             try:
                 with st.spinner("Analyzing image…"):
-                    i, conf, probs = preprocess_and_predict_file(pre, wrapper, file.getbuffer(), file.name)
+                    i, conf, probs, disp_img = preprocess_and_predict_file(pre, wrapper, file.getbuffer(), file.name)
                     pred_name = class_names[i]
                     tri_label, tri_tip = get_triage_tip(i, triage_map)
                     color = color_from_triage(i, triage_map)
+
+                    st.success(f"Prediction: **{pred_name}**  ·  Confidence: **{conf:.3f}**")
+                    st.image(disp_img, caption="Processed image used for prediction", use_container_width=False, width=300)
 
                 # Result header
                 st.success(f"Prediction: **{pred_name}**  ·  Confidence: **{conf:.3f}**")
