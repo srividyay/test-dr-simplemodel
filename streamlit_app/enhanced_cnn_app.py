@@ -23,7 +23,7 @@ except Exception:
 # -----------------------------
 # App-wide constants & helpers
 # -----------------------------
-APP_TITLE = "Image Severity Classifier (Clinical Preview)"
+APP_TITLE = "Diabetic Retinopathy Severity Classifier"
 APP_TAGLINE = "For clinical use only."
 
 TRIAGE_THRESHOLDS = {
