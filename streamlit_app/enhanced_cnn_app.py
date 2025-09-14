@@ -374,7 +374,6 @@ with st.expander("Clinical Glossary & Interpretation Tips"):
         """
 - **Model class names** map to your study schema (see config). The app shows a **triage** cue to help you sort cases for review.
 - **Confidence** is the model’s internal probability; it is **not** a measure of clinical certainty.
-- Always corroborate with history, exam, and established guidelines. This tool is not cleared by regulators.
         """
     )
 
