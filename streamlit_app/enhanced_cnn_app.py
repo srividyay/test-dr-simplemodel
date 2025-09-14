@@ -24,7 +24,7 @@ except Exception:
 # App-wide constants & helpers
 # -----------------------------
 APP_TITLE = "Image Severity Classifier (Clinical Preview)"
-APP_TAGLINE = "For clinical research use only — Not for diagnosis or patient care."
+APP_TAGLINE = "For clinical use only."
 
 TRIAGE_THRESHOLDS = {
     # map of class index (or name) → (label, guidance, hex_color)
@@ -61,10 +61,8 @@ def in_ph_safe_mode():
 def show_disclaimer():
     st.info(
         "### Clinical Preview\n"
-        "This tool is intended for **research and educational use only**. "
-        "It is **not a medical device** and **must not** be used for diagnosis or patient care. "
-        "Outputs may be inaccurate. Always consult qualified clinicians.",
-        icon="ℹ️",
+        "",
+        icon="<a href="https://www.flaticon.com/free-icons/ophthalmology" title="ophthalmology icons">Ophthalmology icons created by Paul J. - Flaticon</a>",
     )
 
 def ensure_tmp():
@@ -199,9 +197,12 @@ with st.sidebar:
 
     st.markdown("**Confidence Guidance**")
     st.caption(
-        "- ≥ 0.85: Strong model signal — still **not clinical advice**.\n"
-        "- 0.60–0.85: Moderate signal — review alongside clinical context.\n"
-        "- < 0.60: Low confidence — treat as **inconclusive**."
+        "- Severity grades (0-4 scale):"
+        "- 0: No diabetic retinopathy"
+        "- 1: Mild nonproliferative retinopathy"
+        "- 2: Moderate nonproliferative retinopathy"
+        "- 3: Severe nonproliferative retinopathy"
+        "- 4: Proliferative diabetic retinopathy"
     )
 
     st.divider()
@@ -222,7 +223,7 @@ with st.sidebar:
 # --------------------------------
 st.title("🩺 " + APP_TITLE)
 st.write(
-    "Upload chest-related images (per your study protocol). The app returns **model-inferred severity** "
+    "Upload diabetic retinopathy images. The app returns **model-inferred severity** "
     "and **confidence** with a plain-language triage cue. "
     "Consult the sidebar for usage notes."
 )
