@@ -56,7 +56,7 @@ def preprocess_and_predict_file(pre, wrapper, file_bytes, filename):
 
 def app():
     # Call this before loading models
-    download_models()
+    # download_models()
     st.title('Image Severity Classifier')
     cfg_path = st.text_input('Config path', value='configs/config_local.yaml')
     if not os.path.exists(cfg_path):
